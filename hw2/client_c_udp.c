@@ -14,9 +14,10 @@ int main(int argc, char *argv[]) {
     
     int client_sock;
     struct sockaddr_in server_addr;
+    socklen_t addr_len = sizeof(server_addr);
     char buffer[BUFFER_SIZE];
     
-    client_sock = socket(AF_INET, SOCK_STREAM, 0);
+    client_sock = socket(AF_INET, SOCK_DGRAM, 0);
     if (client_sock < 0) {
         perror("Socket creation failed");
         exit(1);
@@ -29,8 +30,12 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
     
-    if (connect(client_sock, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
-        perror("Connection failed");
+    // Timeout so that the client doesn't wait indefinitely for a response since the server can't close the connection
+    struct timeval tv;
+    tv.tv_sec = 5;
+    tv.tv_usec = 0;
+    if (setsockopt(client_sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
+        perror("Error setting timeout");
         exit(1);
     }
     
@@ -38,15 +43,17 @@ int main(int argc, char *argv[]) {
     fgets(buffer, BUFFER_SIZE, stdin);
     buffer[strcspn(buffer, "\n")] = 0;
     
-    send(client_sock, buffer, strlen(buffer), 0);
+    sendto(client_sock, buffer, strlen(buffer), 0, (struct sockaddr *)&server_addr, addr_len);
     
-    ssize_t bytes_received;
-    while ((bytes_received = recv(client_sock, buffer, BUFFER_SIZE - 1, 0)) > 0) {
-        buffer[bytes_received] = '\0';  // Null terminate the received data
-        char *token = strtok(buffer, "\n");  // Split by newlines so we can print each line separately
-        while (token != NULL) {
-            printf("From server: %s\n", token);  // Print each line separately
-            token = strtok(NULL, "\n");
+    // Keep receiving messages until timeout or error
+    int num_bytes;
+    while ((num_bytes = recvfrom(client_sock, buffer, BUFFER_SIZE - 1, 0, 
+           (struct sockaddr *)&server_addr, &addr_len)) > 0) {
+        buffer[num_bytes] = '\0';
+        char *line = strtok(buffer, "\n");
+        while (line != NULL) {
+            printf("From server: %s\n", line);
+            line = strtok(NULL, "\n");
         }
     }
     
