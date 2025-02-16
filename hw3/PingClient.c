@@ -91,10 +91,10 @@ int main(int argc, char *argv[]) {
     double avg_rtt = received ? (total_rtt / received) : 0.0;
 
     // Print final statistics
-    printf("\n--- ping statistics ---\n");
-    printf("%d packets transmitted, %d received, %.2f%% packet loss\n", transmitted, received, loss_percent);
+    printf("\n--- %s ping statistics ---\n", server_ip);
+    printf("%d packets transmitted, %d received, %.0f%% packet loss\n", transmitted, received, loss_percent);
     if (received > 0) {
-        printf("rtt min/avg/max = %.2f/%.2f/%.2f ms\n", min_rtt, avg_rtt, max_rtt);
+        printf("rtt min/avg/max = %.3f %.3f %.3f ms\n", min_rtt, avg_rtt, max_rtt);
     }
 
     close(sockfd);

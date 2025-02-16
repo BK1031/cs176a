@@ -3,7 +3,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <arpa/inet.h>
-#include <sys/time.h>
 
 #define BUFFER_SIZE 129 // 128 chars + null terminator
 
