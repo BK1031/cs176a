@@ -6,6 +6,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <sys/time.h>
+#include <math.h>
 
 #define PING_COUNT 10
 #define TIMEOUT_SEC 1
@@ -91,11 +92,16 @@ int main(int argc, char *argv[]) {
     double avg_rtt = received ? (total_rtt / received) : 0.0;
 
     // Print final statistics
-    printf("\n--- %s ping statistics ---\n", server_ip);
-    printf("%d packets transmitted, %d received, %.0f%% packet loss\n", transmitted, received, loss_percent);
+    printf("--- %s ping statistics ---\n", server_ip);
+    printf("%d packets transmitted, %d received, %.0f%% packet loss", transmitted, received, loss_percent);
     if (received > 0) {
-        printf("rtt min/avg/max = %.3f %.3f %.3f ms\n", min_rtt, avg_rtt, max_rtt);
+        // Round RTT values to 3 decimal places
+        min_rtt = round(min_rtt * 1000) / 1000.0;
+        avg_rtt = round(avg_rtt * 1000) / 1000.0;
+        max_rtt = round(max_rtt * 1000) / 1000.0;
+        printf(" rtt min/avg/max = %.3f %.3f %.3f ms", min_rtt, avg_rtt, max_rtt);
     }
+    printf("\n");
 
     close(sockfd);
     return 0;
