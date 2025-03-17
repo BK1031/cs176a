@@ -1,0 +1,15 @@
+tree
+frog
+moon
+fish
+wolf
+apple
+grape
+chair
+smile
+table
+elephant
+computer
+birthday
+umbrella
+sunshine
